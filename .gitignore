@@ -1,0 +1,11 @@
+.anchor
+.DS_Store
+target
+**/*.rs.bk
+node_modules
+test-ledger
+.yarn
+
+# Program identity and any stray keypairs must never be committed.
+# (target/ already covers the program-identity keypair; this is belt-and-suspenders.)
+**/*-keypair.json

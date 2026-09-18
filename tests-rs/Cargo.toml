@@ -1,0 +1,33 @@
+[package]
+name = "solcard-staking-litesvm-tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[features]
+default = ["localnet"]
+localnet = ["solcard-staking/localnet"]
+mainnet = ["solcard-staking/mainnet"]
+
+# No library or binary of its own: this crate exists purely to host the
+# integration tests under tests/. It is kept out of programs/ so its
+# dev-dependencies can never be pulled into an SBF build of the program.
+[lib]
+path = "src/lib.rs"
+
+[dev-dependencies]
+litesvm = "0.15.2"
+proptest = "1"
+anchor-lang = "1.1.2"
+anchor-spl = "1.1.2"
+solcard-staking = { path = "../programs/solcard-staking", default-features = false, features = ["no-entrypoint"] }
+
+# Pinned to the same generation litesvm resolves, so Instruction/Transaction
+# types unify across anchor and the VM instead of silently becoming two
+# incompatible sets of near-identical structs.
+solana-transaction = "4"
+solana-instruction = "3"
+solana-account = "4"
+solana-keypair = "3"
+solana-signer = "3"
+solana-system-interface = "3"

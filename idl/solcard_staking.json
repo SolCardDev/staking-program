@@ -1,0 +1,925 @@
+{
+  "address": "2RASqhcgpvvkqbkH6z7W3RSSpsvSRt4WCPvmqkccso8g",
+  "metadata": {
+    "name": "solcard_staking",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "add_stake",
+      "docs": [
+        "Adds `amount` SOLC to the caller's stake, keeping the term.",
+        "",
+        "Signer: `owner`.",
+        "Enforces: at least half the term still remaining; the unlock moves later, never earlier.",
+        "Errors: `InvalidAmount`, `AddRequiresRelock`, `MathOverflow`."
+      ],
+      "discriminator": [
+        58,
+        135,
+        189,
+        105,
+        160,
+        120,
+        165,
+        224
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "Signs the transfer and the state change. Pays no rent: the account exists."
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "stake_account"
+          ]
+        },
+        {
+          "name": "mint",
+          "docs": [
+            "The one staked mint, fixed at compile time per cluster."
+          ],
+          "address": "4RrWLCNESAemwKDj9KjGnBkfyxKzWy8XGCBguzdqnyRb"
+        },
+        {
+          "name": "stake_account",
+          "docs": [
+            "The owner's live stake. `has_one` re-checks the stored owner independently",
+            "of the seeds, so a forged `owner` field is rejected on its own."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  107,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_token_account",
+          "docs": [
+            "Source of an [`add_stake_handler`] transfer; unused by [`relock_handler`]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "The owner's vault, opened by `stake`. Credited by [`add_stake_handler`];",
+            "unused by [`relock_handler`]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Pinned to the classic SPL Token program, which excludes Token-2022 and its extensions."
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "relock",
+      "docs": [
+        "Restarts the caller's lock at now with a term no shorter than the current one.",
+        "",
+        "Signer: `owner`. Moves no tokens.",
+        "Enforces: `0 < lock_duration <= MAX_LOCK_DURATION`; the term never shortens; the unlock moves strictly later.",
+        "Errors: `InvalidLockDuration`, `LockDowngraded`, `NoopRelock`, `MathOverflow`."
+      ],
+      "discriminator": [
+        235,
+        187,
+        184,
+        112,
+        143,
+        63,
+        95,
+        102
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "Signs the transfer and the state change. Pays no rent: the account exists."
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "stake_account"
+          ]
+        },
+        {
+          "name": "mint",
+          "docs": [
+            "The one staked mint, fixed at compile time per cluster."
+          ],
+          "address": "4RrWLCNESAemwKDj9KjGnBkfyxKzWy8XGCBguzdqnyRb"
+        },
+        {
+          "name": "stake_account",
+          "docs": [
+            "The owner's live stake. `has_one` re-checks the stored owner independently",
+            "of the seeds, so a forged `owner` field is rejected on its own."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  107,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_token_account",
+          "docs": [
+            "Source of an [`add_stake_handler`] transfer; unused by [`relock_handler`]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "The owner's vault, opened by `stake`. Credited by [`add_stake_handler`];",
+            "unused by [`relock_handler`]."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Pinned to the classic SPL Token program, which excludes Token-2022 and its extensions."
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "lock_duration",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "stake",
+      "docs": [
+        "Locks `amount` SOLC for `lock_duration` seconds, opening the caller's stake.",
+        "",
+        "Signer: `owner`, who also pays the stake account's rent.",
+        "Enforces: one live stake per owner; `amount > 0`; `0 < lock_duration <= MAX_LOCK_DURATION`.",
+        "Errors: `InvalidAmount`, `InvalidLockDuration`, `MathOverflow`."
+      ],
+      "discriminator": [
+        206,
+        176,
+        202,
+        18,
+        200,
+        209,
+        179,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "Signs the transfer and pays the stake account's rent; receives it back on withdraw."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "docs": [
+            "The one staked mint, fixed at compile time per cluster."
+          ],
+          "address": "4RrWLCNESAemwKDj9KjGnBkfyxKzWy8XGCBguzdqnyRb"
+        },
+        {
+          "name": "stake_account",
+          "docs": [
+            "The owner's stake, created here. `init` (never `init_if_needed`) rejects a",
+            "second stake while one is live, so no existing position can be overwritten."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  107,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_token_account",
+          "docs": [
+            "Source of the tokens. Pinned to the owner's ATA, so the owner cannot fund a",
+            "stake from an account they merely hold a delegation on."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "The owner's vault, created here and held under their own stake account. A",
+            "plain PDA token account, not an ATA: anyone may create another wallet's",
+            "ATA, and `init` on an existing account fails, so an ATA vault would let a",
+            "stranger block this stake for the price of rent."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Pinned to the classic SPL Token program, which excludes Token-2022 and its extensions."
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "lock_duration",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "withdraw",
+      "docs": [
+        "Pays the caller's whole vault back and closes the vault and the stake account.",
+        "",
+        "Signer: `owner`, who receives the tokens and both accounts' reclaimed rent.",
+        "Enforces: `now >= lock_start + lock_duration`; the payout is the vault's full balance,",
+        "which must be at least the recorded `amount`.",
+        "Errors: `LockNotExpired`, `VaultUnderfunded`, `MathOverflow`."
+      ],
+      "discriminator": [
+        183,
+        18,
+        70,
+        156,
+        148,
+        109,
+        161,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "Signs the withdrawal and receives the tokens and both accounts' reclaimed rent."
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "stake_account"
+          ]
+        },
+        {
+          "name": "mint",
+          "docs": [
+            "The one staked mint, fixed at compile time per cluster."
+          ],
+          "address": "4RrWLCNESAemwKDj9KjGnBkfyxKzWy8XGCBguzdqnyRb"
+        },
+        {
+          "name": "stake_account",
+          "docs": [
+            "The owner's live stake, closed here. `has_one` re-checks the stored owner",
+            "independently of the seeds. It also signs the payout CPI, which is why the",
+            "vault needs no separate authority."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  107,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_token_account",
+          "docs": [
+            "Destination. Pinned to the owner's ATA, so a withdrawal cannot be",
+            "redirected to a third party's token account."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "The owner's vault, emptied and closed here. Holding only this owner's",
+            "tokens is what makes paying out its full balance safe."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Pinned to the classic SPL Token program, which excludes Token-2022 and its extensions."
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "StakeAccount",
+      "discriminator": [
+        80,
+        158,
+        67,
+        124,
+        50,
+        189,
+        192,
+        255
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidAmount",
+      "msg": "Stake amount must be greater than zero"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidLockDuration",
+      "msg": "Lock duration must be positive and within the allowed maximum"
+    },
+    {
+      "code": 6002,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6003,
+      "name": "LockNotExpired",
+      "msg": "Lock period has not yet expired"
+    },
+    {
+      "code": 6004,
+      "name": "LockDowngraded",
+      "msg": "Relock cannot shorten the lock term"
+    },
+    {
+      "code": 6005,
+      "name": "NoopRelock",
+      "msg": "Relock must move the unlock time later"
+    },
+    {
+      "code": 6006,
+      "name": "AddRequiresRelock",
+      "msg": "Add requires at least half the lock term to remain; relock first"
+    },
+    {
+      "code": 6007,
+      "name": "VaultUnderfunded",
+      "msg": "Vault holds less than the recorded stake amount"
+    }
+  ],
+  "types": [
+    {
+      "name": "StakeAccount",
+      "docs": [
+        "One active stake per user. PDA: `[STAKE_SEED, owner]`, created by `stake` and",
+        "closed by `withdraw`; a user with no live stake has no account.",
+        "",
+        "Layout is frozen: there is no version field and no migration path, so a change",
+        "here means a new program id. Nothing derivable off-chain from these five",
+        "fields belongs in it.",
+        "",
+        "Invariants across the account's life: `amount > 0`; `0 < lock_duration <=",
+        "MAX_LOCK_DURATION`; `lock_start + lock_duration` is representable in `i64`;",
+        "`lock_start <= now` at every write; and that sum, the unlock, never moves",
+        "earlier except under a backward clock correction via `relock`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "docs": [
+              "The staker. Bound by the PDA seeds and re-checked via has_one on add_stake, relock and withdraw."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "docs": [
+              "Staked SOLC amount in base units. Paid out in full, and only in full."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "lock_start",
+            "docs": [
+              "Unix timestamp (seconds): amount-weighted start of the current term, moved",
+              "by `add_stake` and `relock`, so it is not the first-stake date."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "lock_duration",
+            "docs": [
+              "Lock length in seconds. Withdrawable at lock_start + lock_duration."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Stored bump for the stake PDA, so later instructions do not re-derive it."
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

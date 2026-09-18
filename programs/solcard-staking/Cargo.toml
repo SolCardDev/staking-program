@@ -1,0 +1,42 @@
+[package]
+name = "solcard-staking"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "solcard_staking"
+
+[features]
+default = ["localnet"]
+localnet = []
+devnet = []
+mainnet = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+
+[dependencies]
+anchor-lang = "1.1.2"
+anchor-spl = "1.1.2"
+
+# anchor-cli 1.1.2 passes --tools-version v1.52 to cargo build-sbf; solana-verify
+# calls cargo build-sbf directly and would otherwise take the image default
+# (v1.48/v1.51, cargo 1.84), which cannot parse the edition-2024 crates in
+# anchor-lang 1.1.2's graph. cargo-build-sbf reads this, so a verifier needs no
+# extra flags. It does not change the compiled bytes.
+[package.metadata.solana]
+tools-version = "v1.52"
+
+# Anchor and the Solana entrypoint expand to cfgs this crate never declares, so
+# without this every `-D warnings` run fails on generated code.
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = [
+    'cfg(target_os, values("solana"))',
+    'cfg(feature, values("anchor-debug", "custom-heap", "custom-panic"))',
+] }
+
